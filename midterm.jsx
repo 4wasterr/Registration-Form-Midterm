@@ -717,12 +717,19 @@ export default function MidtermRegistrationForm() {
   };
 
   const validateMiddleInitialOrName = (name) => {
-    if (!name || name.trim().length === 0) {
-      return ''; // Optional
+    // If empty or null/undefined, it is optional and valid
+    if (!name || name === '') {
+      return '';
     }
+    // If it contains only blank spaces or whitespace characters
+    if (name.trim().length === 0) {
+      return 'Middle Initial / Name cannot be blank spaces.';
+    }
+    // If it contains any space characters
     if (/\s/.test(name)) {
       return 'Middle Initial / Name cannot contain space characters.';
     }
+    // Must contain letters only (supports ñ/Ñ)
     if (!/^[a-zA-ZñÑ]+$/.test(name)) {
       return 'Middle Initial / Name must contain letters only.';
     }
@@ -1570,7 +1577,7 @@ export default function MidtermRegistrationForm() {
                 <span className="preview-key">Full Name:</span>
                 <span className="preview-val font-bold">
                   {formData.firstName || formData.lastName
-                    ? `${formData.firstName}${formData.middleName ? ` ${formData.middleName}` : ''} ${formData.lastName}`.trim()
+                    ? `${formData.firstName}${formData.middleName && formData.middleName.trim() ? ` ${formData.middleName.trim()}` : ''} ${formData.lastName}`.trim()
                     : '—'}
                 </span>
               </div>
@@ -1580,7 +1587,7 @@ export default function MidtermRegistrationForm() {
               </div>
               <div className="preview-row">
                 <span className="preview-key">Middle Initial / Name:</span>
-                <span className="preview-val">{formData.middleName || 'N/A (None)'}</span>
+                <span className="preview-val">{formData.middleName && formData.middleName.trim() ? formData.middleName : 'N/A (None)'}</span>
               </div>
               <div className="preview-row">
                 <span className="preview-key">Last Name:</span>
