@@ -70,6 +70,76 @@ export function getDaysInMonth(month, year) {
   return 31;
 }
 
+// -------------------------------------------------------------
+// LIVE EMAIL DOMAIN VERIFICATION API (Public DNS-over-HTTPS)
+// Queries Google Public DNS (and Cloudflare DNS fallback) in real-time
+// to check if domain exists and has active MX/A mail records. No API key needed.
+// -------------------------------------------------------------
+export async function checkEmailDomainApi(domain) {
+  if (!domain || !domain.includes('.')) {
+    return { exists: false, reason: 'Please enter a valid domain format.' };
+  }
+
+  const cleanDomain = domain.trim().toLowerCase();
+
+  try {
+    // 1. Primary: Google Public DNS over HTTPS (Free, CORS enabled)
+    const googleRes = await fetch(
+      `https://dns.google/resolve?name=${encodeURIComponent(cleanDomain)}&type=MX`
+    );
+    if (googleRes.ok) {
+      const data = await googleRes.json();
+      // Status 0: NOERROR
+      if (data.Status === 0 && Array.isArray(data.Answer) && data.Answer.length > 0) {
+        return { exists: true, provider: 'Google DNS (MX Record Found)' };
+      }
+      // Status 3: NXDOMAIN (Domain does not exist)
+      if (data.Status === 3) {
+        return { exists: false, reason: `Domain "@${cleanDomain}" does not exist.` };
+      }
+      // Fallback check for A record (direct host mail delivery)
+      const aRes = await fetch(
+        `https://dns.google/resolve?name=${encodeURIComponent(cleanDomain)}&type=A`
+      );
+      if (aRes.ok) {
+        const aData = await aRes.json();
+        if (aData.Status === 0 && Array.isArray(aData.Answer) && aData.Answer.length > 0) {
+          return { exists: true, provider: 'Google DNS (A Record Found)' };
+        }
+        if (aData.Status === 3) {
+          return { exists: false, reason: `Domain "@${cleanDomain}" does not exist.` };
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Google DNS lookup failed, attempting fallback...', err);
+  }
+
+  // 2. Secondary Fallback: Cloudflare DNS over HTTPS
+  try {
+    const cfRes = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(cleanDomain)}&type=MX`,
+      { headers: { Accept: 'application/dns-json' } }
+    );
+    if (cfRes.ok) {
+      const cfData = await cfRes.json();
+      if (cfData.Status === 0 && Array.isArray(cfData.Answer) && cfData.Answer.length > 0) {
+        return { exists: true, provider: 'Cloudflare DNS (MX Record Found)' };
+      }
+      if (cfData.Status === 3) {
+        return { exists: false, reason: `Domain "@${cleanDomain}" does not exist.` };
+      }
+    }
+  } catch (cfErr) {
+    console.warn('Cloudflare DNS lookup failed:', cfErr);
+  }
+
+  return {
+    exists: false,
+    reason: `Could not verify domain "@${cleanDomain}". Please check domain spelling or internet connection.`
+  };
+}
+
 export function getPhilippineHolidays(year) {
   const holidays = [];
 
@@ -743,15 +813,6 @@ const PH_LOCATIONS = [
   }
 ];
 
-const VALID_EMAIL_DOMAINS = [
-  'gmail.com', 'yahoo.com', 'yahoo.com.ph', 'outlook.com', 'hotmail.com',
-  'icloud.com', 'proton.me', 'protonmail.com', 'live.com', 'aol.com',
-  'zoho.com', 'mail.com', 'up.edu.ph', 'ust.edu.ph', 'dlsu.edu.ph',
-  'ateneo.edu', 'pup.edu.ph', 'ucc.edu.ph', 'deped.gov.ph'
-];
-
-const VALID_TLD_REGEX = /\.(com|org|net|edu|gov|ph|edu\.ph|gov\.ph|com\.ph|org\.ph|io|co|me|info|biz)$/i;
-
 export default function MidtermRegistrationForm() {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -774,8 +835,75 @@ export default function MidtermRegistrationForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submittedData, setSubmittedData] = useState(null);
+
+  // Live Email DNS Verification API State (Google Public DNS & Cloudflare DoH)
+  const [emailStatus, setEmailStatus] = useState({
+    checking: false,
+    verified: false,
+    domain: '',
+    message: '',
+  });
+
+  // Debounced live email domain verification via public DNS API (no hardcoded list)
+  useEffect(() => {
+    const email = formData.email.trim();
+    if (!email) {
+      setEmailStatus({ checking: false, verified: false, domain: '', message: '' });
+      return;
+    }
+    if (/\s/.test(email)) {
+      setEmailStatus({ checking: false, verified: false, domain: '', message: '' });
+      return;
+    }
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      setEmailStatus({ checking: false, verified: false, domain: '', message: '' });
+      return;
+    }
+
+    const domain = email.split('@')[1]?.toLowerCase().trim();
+    if (!domain) return;
+
+    let isMounted = true;
+    setEmailStatus(prev => ({
+      ...prev,
+      checking: true,
+      verified: false,
+      domain,
+      message: `Checking domain @${domain} via DNS API...`,
+    }));
+
+    const timer = setTimeout(async () => {
+      const result = await checkEmailDomainApi(domain);
+      if (!isMounted) return;
+
+      if (result.exists) {
+        setEmailStatus({
+          checking: false,
+          verified: true,
+          domain,
+          message: `Domain @${domain} exists & active.`,
+        });
+        setErrors(prev => ({ ...prev, email: '' }));
+      } else {
+        setEmailStatus({
+          checking: false,
+          verified: false,
+          domain,
+          message: result.reason || `Domain @${domain} does not exist.`,
+        });
+        setErrors(prev => ({
+          ...prev,
+          email: result.reason || `Domain "@${domain}" does not exist.`,
+        }));
+      }
+    }, 450);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [formData.email]);
 
   // Standalone Year Dropdown state for Philippine Holidays
   const [selectedHolidayYear, setSelectedHolidayYear] = useState(2026);
@@ -897,19 +1025,11 @@ export default function MidtermRegistrationForm() {
       return 'Email address is required.';
     }
     if (/\s/.test(email)) {
-      return 'Email cannot contain spaces.';
+      return 'Email cannot contain space characters.';
     }
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
-      return 'Please enter a valid email address.';
-    }
-
-    const domainPart = email.split('@')[1]?.toLowerCase();
-    const hasKnownDomain = VALID_EMAIL_DOMAINS.includes(domainPart);
-    const hasValidTLD = VALID_TLD_REGEX.test(domainPart);
-
-    if (!hasKnownDomain && !hasValidTLD) {
-      return `Domain "@${domainPart}" is unrecognized. Please use a valid domain.`;
+      return 'Please enter a valid email format (e.g. name@domain.com).';
     }
     return '';
   };
@@ -924,6 +1044,51 @@ export default function MidtermRegistrationForm() {
       special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(p),
     };
   }, [formData.password]);
+
+  // Live registration completion status across all 5 sections
+  const completionStats = useMemo(() => {
+    let completed = 0;
+    const total = 5; // 1. Names, 2. Birthdate, 3. Email, 4. Address, 5. Security
+
+    if (
+      formData.firstName.trim().length >= 2 &&
+      formData.lastName.trim().length >= 2 &&
+      !errors.firstName &&
+      !errors.lastName &&
+      !errors.middleName
+    ) {
+      completed++;
+    }
+    if (formData.birthMonth && formData.birthDay && formData.birthYear && !errors.birthdate) {
+      completed++;
+    }
+    if (formData.email.trim() && !errors.email && emailStatus.verified) {
+      completed++;
+    }
+    if (
+      formData.blockNo.trim() &&
+      formData.region &&
+      formData.city &&
+      formData.barangay &&
+      !errors.blockNo &&
+      !errors.region &&
+      !errors.city &&
+      !errors.barangay
+    ) {
+      completed++;
+    }
+    if (
+      formData.password &&
+      formData.confirmPassword &&
+      formData.password === formData.confirmPassword &&
+      !errors.password &&
+      !errors.confirmPassword
+    ) {
+      completed++;
+    }
+
+    return { completed, total, isComplete: completed === total };
+  }, [formData, errors, emailStatus.verified]);
 
   const validatePassword = (password) => {
     if (!password) {
@@ -1159,36 +1324,6 @@ export default function MidtermRegistrationForm() {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const allErrors = validateAll();
-    setErrors(allErrors);
-
-    setTouched({
-      firstName: true,
-      middleName: true,
-      lastName: true,
-      email: true,
-      password: true,
-      confirmPassword: true,
-      birthdate: true,
-      blockNo: true,
-      region: true,
-      city: true,
-      barangay: true,
-    });
-
-    if (Object.keys(allErrors).length === 0) {
-      setSubmittedData({
-        ...formData,
-        birthdate: formattedBirthdate,
-        fullAddress,
-        age: calculatedAge,
-      });
-      setIsSubmitted(true);
-    }
-  };
-
   const handleReset = () => {
     setFormData({
       firstName: '',
@@ -1207,8 +1342,12 @@ export default function MidtermRegistrationForm() {
     });
     setErrors({});
     setTouched({});
-    setIsSubmitted(false);
-    setSubmittedData(null);
+    setEmailStatus({
+      checking: false,
+      verified: false,
+      domain: '',
+      message: '',
+    });
   };
 
   return (
@@ -1219,7 +1358,18 @@ export default function MidtermRegistrationForm() {
           <p className="form-subtitle">Please enter your information below to register.</p>
         </header>
 
-        <form onSubmit={handleSubmit} noValidate className="registration-form">
+        <form onSubmit={(e) => e.preventDefault()} noValidate className="registration-form">
+          {/* Live Validation Status Banner (No Submit Button - Real-Time Validation Active) */}
+          <div className={`live-status-banner ${completionStats.isComplete ? 'complete' : ''}`}>
+            <span className="live-status-text">
+              {completionStats.isComplete
+                ? 'All Registration Information Verified & Validated (Live API & Format Checks Passed)'
+                : `Live Validation Status: ${completionStats.completed} of ${completionStats.total} sections complete`}
+            </span>
+            <span className={`live-badge ${completionStats.isComplete ? 'complete' : 'in-progress'}`}>
+              {completionStats.isComplete ? 'Complete' : 'In Progress'}
+            </span>
+          </div>
           {/* SECTION: PERSONAL INFORMATION */}
           <div className="form-section">
             <h2 className="section-title">Personal Information</h2>
@@ -1391,7 +1541,7 @@ export default function MidtermRegistrationForm() {
               </div>
             </div>
 
-            {/* Email Address */}
+            {/* Email Address with Live DNS Domain API Check */}
             <div className={`form-group mt-4 ${errors.email && touched.email ? 'has-error' : ''}`}>
               <label htmlFor="email">
                 Email Address <span className="req">*</span>
@@ -1405,7 +1555,26 @@ export default function MidtermRegistrationForm() {
                 onBlur={() => handleBlur('email')}
                 className="form-input"
               />
-              <span className="field-hint">Valid domain required (e.g. gmail.com, yahoo.com, .edu.ph)</span>
+              <span className="field-hint">
+                Live domain verification via public DNS API (checks if domain exists & receives mail)
+              </span>
+
+              {/* Live Domain Status Badges */}
+              {emailStatus.checking && (
+                <div className="domain-status-row">
+                  <span className="domain-checking-badge">
+                    Checking domain @{emailStatus.domain} via DNS API...
+                  </span>
+                </div>
+              )}
+              {!emailStatus.checking && emailStatus.verified && (
+                <div className="domain-status-row">
+                  <span className="domain-verified-badge">
+                    Domain @{emailStatus.domain} exists & active
+                  </span>
+                </div>
+              )}
+
               {errors.email && touched.email && (
                 <p className="error-msg">{errors.email}</p>
               )}
@@ -1621,124 +1790,128 @@ export default function MidtermRegistrationForm() {
             </div>
           </div>
 
-          {/* Form Actions */}
+          {/* Form Actions (Submit button removed - Live Validation Active) */}
           <div className="form-actions">
-            <button type="submit" className="btn btn-primary">
-              Submit Registration
-            </button>
             <button type="button" onClick={handleReset} className="btn btn-secondary">
-              Reset
+              Reset Form
             </button>
           </div>
         </form>
 
-        {/* PREVIEW OF ALL THINGS (DISPLAYED AFTER CLICKING THE BUTTON) */}
-        {isSubmitted && submittedData && (
-          <div className="preview-container mt-4" id="registrationPreview">
-            <div className="preview-banner">
-              <h2 className="preview-main-title">Registration Preview</h2>
-              <p className="preview-main-sub">
-                Here is the verified preview of all your submitted information:
-              </p>
-            </div>
-
-            {/* 1. Personal Details Preview */}
-            <div className="preview-group">
-              <h3 className="preview-group-title">Personal Details</h3>
-              <div className="preview-table">
-                <div className="preview-row">
-                  <span className="preview-key">Full Name:</span>
-                  <span className="preview-val font-bold">
-                    {submittedData.firstName}{submittedData.middleName ? ` ${submittedData.middleName}` : ''} {submittedData.lastName}
-                  </span>
-                </div>
-                <div className="preview-row">
-                  <span className="preview-key">First Name:</span>
-                  <span className="preview-val">{submittedData.firstName}</span>
-                </div>
-                <div className="preview-row">
-                  <span className="preview-key">Middle Initial / Name:</span>
-                  <span className="preview-val">{submittedData.middleName || 'N/A (None)'}</span>
-                </div>
-                <div className="preview-row">
-                  <span className="preview-key">Last Name:</span>
-                  <span className="preview-val">{submittedData.lastName}</span>
-                </div>
-                <div className="preview-row">
-                  <span className="preview-key">Email Address:</span>
-                  <span className="preview-val">{submittedData.email}</span>
-                </div>
-                <div className="preview-row">
-                  <span className="preview-key">Birthdate (mm/dd/yy):</span>
-                  <span className="preview-val">
-                    {submittedData.birthdate} {submittedData.age !== null ? `(${submittedData.age} years old)` : ''}
-                  </span>
-                </div>
+        {/* LIVE REGISTRATION PREVIEW (UPDATES IN REAL TIME - NO SUBMIT BUTTON NEEDED) */}
+        <div className="preview-container mt-4" id="registrationPreview">
+          <div className="preview-banner">
+            <div className="preview-header-flex">
+              <div>
+                <h2 className="preview-main-title">Live Registration Preview</h2>
+                <p className="preview-main-sub">
+                  Live real-time preview of your registration data (updates automatically as you type and select):
+                </p>
               </div>
-            </div>
-
-            {/* 2. Address Details Preview */}
-            <div className="preview-group">
-              <h3 className="preview-group-title">Address Information</h3>
-              <div className="preview-table">
-                <div className="preview-row">
-                  <span className="preview-key">No. of Block / Street:</span>
-                  <span className="preview-val">{submittedData.blockNo}</span>
-                </div>
-                <div className="preview-row">
-                  <span className="preview-key">Region:</span>
-                  <span className="preview-val">{submittedData.region}</span>
-                </div>
-                <div className="preview-row">
-                  <span className="preview-key">City:</span>
-                  <span className="preview-val">{submittedData.city}</span>
-                </div>
-                <div className="preview-row">
-                  <span className="preview-key">Barangay:</span>
-                  <span className="preview-val">
-                    {submittedData.barangay.startsWith('Barangay') || submittedData.barangay.startsWith('Brgy')
-                      ? submittedData.barangay
-                      : `Brgy. ${submittedData.barangay}`}
-                  </span>
-                </div>
-                <div className="preview-row highlight-row">
-                  <span className="preview-key">System-Generated Full Address:</span>
-                  <span className="preview-val font-bold">{submittedData.fullAddress}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Security Preview */}
-            <div className="preview-group">
-              <h3 className="preview-group-title">Security</h3>
-              <div className="preview-table">
-                <div className="preview-row">
-                  <span className="preview-key">Password:</span>
-                  <span className="preview-val">•••••••• (Secured and Validated)</span>
-                </div>
-              </div>
-            </div>
-
-
-            {/* Preview Actions */}
-            <div className="form-actions mt-4">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setIsSubmitted(false)}
-              >
-                Close Preview
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleReset}
-              >
-                New Registration
-              </button>
+              <span className={`live-badge ${completionStats.isComplete ? 'complete' : 'in-progress'}`}>
+                {completionStats.isComplete ? 'All Fields Verified & Valid' : `${completionStats.completed} / ${completionStats.total} Sections Complete`}
+              </span>
             </div>
           </div>
-        )}
+
+          {/* 1. Personal Details Preview */}
+          <div className="preview-group">
+            <h3 className="preview-group-title">Personal Details</h3>
+            <div className="preview-table">
+              <div className="preview-row">
+                <span className="preview-key">Full Name:</span>
+                <span className="preview-val font-bold">
+                  {formData.firstName || formData.lastName
+                    ? `${formData.firstName}${formData.middleName ? ` ${formData.middleName}` : ''} ${formData.lastName}`.trim()
+                    : '—'}
+                </span>
+              </div>
+              <div className="preview-row">
+                <span className="preview-key">First Name:</span>
+                <span className="preview-val">{formData.firstName || '—'}</span>
+              </div>
+              <div className="preview-row">
+                <span className="preview-key">Middle Initial / Name:</span>
+                <span className="preview-val">{formData.middleName || 'N/A (None)'}</span>
+              </div>
+              <div className="preview-row">
+                <span className="preview-key">Last Name:</span>
+                <span className="preview-val">{formData.lastName || '—'}</span>
+              </div>
+              <div className="preview-row">
+                <span className="preview-key">Email Address:</span>
+                <span className="preview-val">
+                  {formData.email || '—'}{' '}
+                  {emailStatus.verified && (
+                    <span className="p-holiday-type" style={{ color: '#16a34a', fontWeight: 600 }}>
+                      [DNS Verified Active]
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className="preview-row">
+                <span className="preview-key">Birthdate (mm/dd/yy):</span>
+                <span className="preview-val">
+                  {formattedBirthdate ? `${formattedBirthdate} ${calculatedAge !== null ? `(${calculatedAge} years old)` : ''}` : '—'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Address Details Preview */}
+          <div className="preview-group">
+            <h3 className="preview-group-title">Address Information</h3>
+            <div className="preview-table">
+              <div className="preview-row">
+                <span className="preview-key">No. of Block / Street:</span>
+                <span className="preview-val">{formData.blockNo || '—'}</span>
+              </div>
+              <div className="preview-row">
+                <span className="preview-key">Region:</span>
+                <span className="preview-val">{formData.region || '—'}</span>
+              </div>
+              <div className="preview-row">
+                <span className="preview-key">City:</span>
+                <span className="preview-val">{formData.city || '—'}</span>
+              </div>
+              <div className="preview-row">
+                <span className="preview-key">Barangay:</span>
+                <span className="preview-val">
+                  {formData.barangay
+                    ? (formData.barangay.startsWith('Barangay') || formData.barangay.startsWith('Brgy')
+                        ? formData.barangay
+                        : `Brgy. ${formData.barangay}`)
+                    : '—'}
+                </span>
+              </div>
+              <div className="preview-row highlight-row">
+                <span className="preview-key">System-Generated Full Address:</span>
+                <span className="preview-val font-bold">{fullAddress || '—'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Security Preview */}
+          <div className="preview-group">
+            <h3 className="preview-group-title">Security</h3>
+            <div className="preview-table">
+              <div className="preview-row">
+                <span className="preview-key">Password:</span>
+                <span className="preview-val">
+                  {formData.password ? '•'.repeat(Math.min(formData.password.length, 12)) : '—'}
+                </span>
+              </div>
+              <div className="preview-row">
+                <span className="preview-key">Password Verification:</span>
+                <span className="preview-val">
+                  {formData.password && !errors.password && formData.confirmPassword === formData.password
+                    ? 'Verified & Matched'
+                    : 'Pending match / requirements'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
