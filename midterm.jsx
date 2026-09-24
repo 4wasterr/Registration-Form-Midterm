@@ -354,9 +354,74 @@ export const PH_REGIONS = PSGC_REGIONS.map(r => r.name);
 
 // In-memory cache to guarantee zero-latency re-selection and offline resilience
 const psgcApiCache = {
+  regions: null,  // [{ code, name, shortName, regionName }]
   cities: {},     // regionCode -> [{ code, name }]
   barangays: {},  // cityCodeOrName -> [string]
 };
+
+// Fetch all 17 regions via live PSGC API (with instant fallback)
+export async function fetchPsgcRegions() {
+  if (psgcApiCache.regions && psgcApiCache.regions.length > 0) {
+    return psgcApiCache.regions;
+  }
+
+  const REGION_ORDER = {
+    '130000000': 1, // NCR
+    '140000000': 2, // CAR
+    '010000000': 3, // Region I
+    '020000000': 4, // Region II
+    '030000000': 5, // Region III
+    '040000000': 6, // Region IV-A
+    '170000000': 7, // Region IV-B
+    '050000000': 8, // Region V
+    '060000000': 9, // Region VI
+    '070000000': 10, // Region VII
+    '080000000': 11, // Region VIII
+    '090000000': 12, // Region IX
+    '100000000': 13, // Region X
+    '110000000': 14, // Region XI
+    '120000000': 15, // Region XII
+    '160000000': 16, // Region XIII
+    '150000000': 17, // BARMM
+  };
+
+  try {
+    const res = await fetch('https://psgc.gitlab.io/api/regions/');
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const formatted = data.map(r => {
+          let displayName = r.name;
+          if (r.name === 'NCR') {
+            displayName = 'NCR (National Capital Region)';
+          } else if (r.name === 'CAR') {
+            displayName = 'CAR (Cordillera Administrative Region)';
+          } else if (r.name === 'BARMM') {
+            displayName = 'BARMM (Bangsamoro Autonomous Region)';
+          } else if (r.code === '170000000') {
+            displayName = 'Region IV-B (MIMAROPA)';
+          } else if (r.regionName && r.regionName !== r.name) {
+            displayName = `${r.regionName} (${r.name})`;
+          }
+          return {
+            code: r.code,
+            name: displayName,
+            shortName: r.name,
+            regionName: r.regionName,
+          };
+        });
+
+        formatted.sort((a, b) => (REGION_ORDER[a.code] || 99) - (REGION_ORDER[b.code] || 99));
+        psgcApiCache.regions = formatted;
+        return formatted;
+      }
+    }
+  } catch (err) {
+    console.warn('PSGC regions API lookup failed, using fallback...', err);
+  }
+
+  return PSGC_REGIONS;
+}
 
 // Fetch all cities and municipalities for a chosen region code via PSGC API
 export async function fetchPsgcCities(regionCode) {
@@ -475,10 +540,34 @@ export default function MidtermRegistrationForm() {
   });
 
   // Dynamic Geographic API State (PSGC API across all Philippine Regions, Cities & Barangays)
+  const [availableRegions, setAvailableRegions] = useState(PSGC_REGIONS);
+  const [loadingRegions, setLoadingRegions] = useState(false);
   const [availableCities, setAvailableCities] = useState([]);
   const [loadingCities, setLoadingCities] = useState(false);
   const [availableBarangays, setAvailableBarangays] = useState([]);
   const [loadingBarangays, setLoadingBarangays] = useState(false);
+
+  // Live PSGC Regions API loading on mount
+  useEffect(() => {
+    let isMounted = true;
+    setLoadingRegions(true);
+    fetchPsgcRegions()
+      .then(regions => {
+        if (isMounted && Array.isArray(regions) && regions.length > 0) {
+          setAvailableRegions(regions);
+        }
+      })
+      .catch(err => {
+        console.warn('Failed to load regions from PSGC API:', err);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingRegions(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Debounced live email domain verification via public DNS API (no hardcoded list)
   useEffect(() => {
@@ -914,7 +1003,7 @@ export default function MidtermRegistrationForm() {
   // Dynamic Geographic Selection Handlers
   const handleRegionChange = async (e) => {
     const chosenRegionName = e.target.value;
-    const regionObj = PSGC_REGIONS.find(r => r.name === chosenRegionName);
+    const regionObj = availableRegions.find(r => r.name === chosenRegionName);
 
     setFormData(prev => ({
       ...prev,
@@ -1374,7 +1463,7 @@ export default function MidtermRegistrationForm() {
             </div>
 
             <div className="grid-3">
-              {/* Region Dropdown */}
+              {/* Region Dropdown (Live PSGC API) */}
               <div className={`form-group ${errors.region && touched.region ? 'has-error' : ''}`}>
                 <label htmlFor="regionSelect">
                   Region (Dropdown) <span className="req">*</span>
@@ -1383,17 +1472,26 @@ export default function MidtermRegistrationForm() {
                   id="regionSelect"
                   className="form-select"
                   value={formData.region}
+                  disabled={loadingRegions}
                   onChange={handleRegionChange}
                   onBlur={() => handleBlur('region')}
                 >
-                  <option value="">-- Select Region ({PSGC_REGIONS.length}) --</option>
-                  {PSGC_REGIONS.map((r) => (
+                  <option value="">
+                    {loadingRegions
+                      ? 'Loading regions from PSGC API...'
+                      : `-- Select Region (${availableRegions.length}) --`}
+                  </option>
+                  {availableRegions.map((r) => (
                     <option key={r.code} value={r.name}>
                       {r.name}
                     </option>
                   ))}
                 </select>
-                <span className="field-hint">Live PSGC API: All 17 Philippine Regions</span>
+                <span className="field-hint">
+                  {loadingRegions
+                    ? 'Fetching official Philippine regions via PSGC API...'
+                    : `Live PSGC API: ${availableRegions.length} Philippine Regions loaded`}
+                </span>
                 {errors.region && touched.region && (
                   <p className="error-msg">{errors.region}</p>
                 )}
