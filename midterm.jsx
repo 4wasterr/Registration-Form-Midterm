@@ -324,494 +324,124 @@ for (let i = 1; i <= 188; i++) {
   }
 }
 
-export const PH_REGIONS = [
-  'NCR (National Capital Region)',
-  'CAR (Cordillera Administrative Region)',
-  'Region I (Ilocos Region)',
-  'Region II (Cagayan Valley)',
-  'Region III (Central Luzon)',
-  'Region IV-A (CALABARZON)',
-  'Region IV-B (MIMAROPA)',
-  'Region V (Bicol Region)',
-  'Region VI (Western Visayas)',
-  'Region VII (Central Visayas)',
-  'Region VIII (Eastern Visayas)',
-  'Region IX (Zamboanga Peninsula)',
-  'Region X (Northern Mindanao)',
-  'Region XI (Davao Region)',
-  'Region XII (SOCCSKSARGEN)',
-  'Region XIII (Caraga)',
-  'BARMM (Bangsamoro Autonomous Region)',
+// -------------------------------------------------------------
+// PHILIPPINE STANDARD GEOGRAPHIC CODE (PSGC) API ENGINE
+// Free, public, keyless, CORS-enabled API for all Philippine
+// Regions, Cities/Municipalities, and Barangays.
+// Base: https://psgc.gitlab.io/api/
+// -------------------------------------------------------------
+export const PSGC_REGIONS = [
+  { code: '130000000', name: 'NCR (National Capital Region)', shortName: 'NCR' },
+  { code: '140000000', name: 'CAR (Cordillera Administrative Region)', shortName: 'CAR' },
+  { code: '010000000', name: 'Region I (Ilocos Region)', shortName: 'Region I' },
+  { code: '020000000', name: 'Region II (Cagayan Valley)', shortName: 'Region II' },
+  { code: '030000000', name: 'Region III (Central Luzon)', shortName: 'Region III' },
+  { code: '040000000', name: 'Region IV-A (CALABARZON)', shortName: 'Region IV-A' },
+  { code: '170000000', name: 'Region IV-B (MIMAROPA)', shortName: 'MIMAROPA' },
+  { code: '050000000', name: 'Region V (Bicol Region)', shortName: 'Region V' },
+  { code: '060000000', name: 'Region VI (Western Visayas)', shortName: 'Region VI' },
+  { code: '070000000', name: 'Region VII (Central Visayas)', shortName: 'Region VII' },
+  { code: '080000000', name: 'Region VIII (Eastern Visayas)', shortName: 'Region VIII' },
+  { code: '090000000', name: 'Region IX (Zamboanga Peninsula)', shortName: 'Region IX' },
+  { code: '100000000', name: 'Region X (Northern Mindanao)', shortName: 'Region X' },
+  { code: '110000000', name: 'Region XI (Davao Region)', shortName: 'Region XI' },
+  { code: '120000000', name: 'Region XII (SOCCSKSARGEN)', shortName: 'Region XII' },
+  { code: '160000000', name: 'Region XIII (Caraga)', shortName: 'Region XIII' },
+  { code: '150000000', name: 'BARMM (Bangsamoro Autonomous Region)', shortName: 'BARMM' },
 ];
 
-const PH_LOCATIONS = [
-  // --- NCR (National Capital Region) ---
-  {
-    name: 'Caloocan City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: CALOOCAN_ALL_BARANGAYS,
-  },
-  {
-    name: 'Quezon City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Alicia', 'Amihan', 'Bagong Silangan', 'Bagong Pag-asa', 'Bagumbayan',
-      'Bahay Toro', 'Batasan Hills', 'Blue Ridge A', 'Blue Ridge B', 'Camp Aguinaldo',
-      'Central', 'Commonwealth', 'Culiat', 'Damayan', 'Diliman',
-      'Fairview', 'Greater Lagro', 'Holy Spirit', 'Kamuning', 'Katipunan',
-      'Loyola Heights', 'Matandang Balara', 'Novaliches Proper', 'Pasong Tamo',
-      'Payatas', 'Phil-Am', 'Pinyahan', 'Project 6', 'Roxas', 'San Antonio',
-      'Santa Cruz', 'Santo Cristo', 'Santo Domingo', 'Sauyo', 'Sikatuna Village',
-      'South Triangle', 'Tandang Sora', 'Teachers Village East', 'UP Campus'
-    ]
-  },
-  {
-    name: 'City of Manila',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Barangay 1', 'Barangay 2', 'Barangay 3', 'Binondo', 'Ermita',
-      'Intramuros', 'Malate', 'Paco', 'Pandacan', 'Port Area',
-      'Quiapo', 'Sampaloc', 'San Andres', 'San Miguel', 'San Nicolas',
-      'Santa Ana', 'Santa Cruz', 'Santa Mesa', 'Tondo I', 'Tondo II'
-    ]
-  },
-  {
-    name: 'Malabon City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Acacia', 'Baritan', 'Bayan-bayanan', 'Catmon', 'Concepcion',
-      'Dampalit', 'Flores', 'Hulong Duhat', 'Ibaba', 'Longos',
-      'Maysilo', 'Muzon', 'Niugan', 'Panghulo', 'Potrero',
-      'San Agustin', 'Santulan', 'Tañong', 'Tinajeros', 'Tonsuya', 'Tugatog'
-    ]
-  },
-  {
-    name: 'Navotas City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Bagumbayan North', 'Bagumbayan South', 'Bangculasi', 'Daanghari',
-      'Navotas East', 'Navotas West', 'North Bay Boulevard North (NBBN)',
-      'North Bay Boulevard South (NBBS) Dagat-dagatan', 'North Bay Boulevard South (NBBS) Proper',
-      'North Bay Boulevard South (NBBS) Kaunlaran', 'San Jose', 'San Rafael Village',
-      'San Roque', 'Sipac-Almacen', 'Tangos North', 'Tangos South', 'Tanza 1', 'Tanza 2'
-    ]
-  },
-  {
-    name: 'Valenzuela City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Arkong Bato', 'Bagbaguin', 'Balangkas', 'Bignay', 'Bisig',
-      'Canumay East', 'Canumay West', 'Coloong', 'Dalandanan', 'Gen. T. de Leon',
-      'Isla', 'Karuhatan', 'Lawang Bato', 'Lingunan', 'Mabolo',
-      'Malanday', 'Malinta', 'Mapulang Lupa', 'Marulas', 'Maysan',
-      'Palasan', 'Parada', 'Pariancillo Villa', 'Paso de Blas', 'Pasolo',
-      'Poblacion', 'Pulo', 'Punturin', 'Rincon', 'Tagalag', 'Ugong', 'Viente Reales', 'Wawang Pulo'
-    ]
-  },
-  {
-    name: 'San Juan City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Addition Hills', 'Balong-Bato', 'Batis', 'Corazon de Jesus', 'Ermitaño',
-      'Halo-halo (St. Joseph)', 'Isabelita', 'Kabayanan', 'Little Baguio', 'Maytunas',
-      'Onse', 'Pasadeña', 'Pedro Cruz', 'Progreso', 'Rivera',
-      'Salapan', 'San Perfecto', 'Santa Lucia', 'Tibagan', 'West Crame'
-    ]
-  },
-  {
-    name: 'Makati City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Bangkal', 'Bel-Air', 'Carmona', 'Dasmarinas', 'Forbes Park',
-      'Guadalupe Nuevo', 'Guadalupe Viejo', 'Kasilawan', 'La Paz', 'Magallanes',
-      'Olympia', 'Palanan', 'Pembo', 'Pio del Pilar', 'Poblacion',
-      'San Antonio', 'San Isidro', 'San Lorenzo', 'Santa Cruz', 'Tejeros', 'Urdaneta'
-    ]
-  },
-  {
-    name: 'Pasig City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Bagong Ilog', 'Bambang', 'Buting', 'Caniogan', 'Dela Paz',
-      'Kalawaan', 'Kapasigan', 'Kapitolyo', 'Malinao', 'Manggahan',
-      'Maybunga', 'Oranbo', 'Palatiw', 'Pinagbuhatan', 'Pineda',
-      'Rosario', 'San Antonio', 'San Joaquin', 'Santa Lucia', 'Santolan', 'Ugong'
-    ]
-  },
-  {
-    name: 'Taguig City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Bagumbayan', 'Bambang', 'Calzada', 'Central Bicutan', 'Central Signal Village',
-      'Fort Bonifacio', 'Hagonoy', 'Lower Bicutan', 'Maharlika Village', 'Napindan',
-      'Pinagsama', 'San Miguel', 'Santa Ana', 'Tuktukan', 'Upper Bicutan', 'Ususan', 'Western Bicutan'
-    ]
-  },
-  {
-    name: 'Mandaluyong City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Addition Hills', 'Bagong Silang', 'Barangka Drive', 'Barangka Ibaba',
-      'Highway Hills', 'Hulo', 'Malamig', 'Namayan', 'New Zaniga',
-      'Plainview', 'Pleasant Hills', 'Poblacion', 'Wack-Wack Greenhills'
-    ]
-  },
-  {
-    name: 'Marikina City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Barangka', 'Calumpang', 'Concepcion Dos', 'Concepcion Uno',
-      'Fortune', 'Industrial Valley Complex', 'Malanday', 'Marikina Heights',
-      'Nangka', 'Parang', 'San Roque', 'Santa Elena', 'Santo Nino', 'Tumana'
-    ]
-  },
-  {
-    name: 'Pasay City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Barangay 1', 'Barangay 10', 'Barangay 20', 'Barangay 50',
-      'Barangay 183 (Villamor)', 'San Isidro', 'San Jose', 'San Rafael', 'Santa Clara'
-    ]
-  },
-  {
-    name: 'Parañaque City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Baclaran', 'BF Homes', 'Don Bosco', 'Don Galo', 'La Huerta',
-      'Marcelo Green', 'Merville', 'Moonwalk', 'San Antonio', 'San Dionisio',
-      'San Isidro', 'San Martin de Porres', 'Santo Nino', 'Sun Valley', 'Tambo'
-    ]
-  },
-  {
-    name: 'Las Piñas City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Almanza Uno', 'Almanza Dos', 'BF International Village', 'Daniel Fajardo',
-      'Pamplona Uno', 'Pamplona Dos', 'Pilar', 'Pulang Lupa Uno', 'Pulang Lupa Dos',
-      'Talon Uno', 'Talon Dos', 'Talon Tres', 'Zapote'
-    ]
-  },
-  {
-    name: 'Muntinlupa City',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Alabang', 'Ayala Alabang', 'Bayanan', 'Buli', 'Cupang',
-      'Poblacion', 'Putatan', 'Sucat', 'Tunasan'
-    ]
-  },
-  {
-    name: 'Pateros',
-    type: 'City',
-    region: 'NCR (National Capital Region)',
-    barangays: [
-      'Aguho', 'Magtanggol', 'Martires del 96', 'Poblacion', 'San Pedro',
-      'San Roque', 'Santa Ana', 'Santo Rosario-Kanluran', 'Santo Rosario-Silangan', 'Tabacalera'
-    ]
-  },
+export const PH_REGIONS = PSGC_REGIONS.map(r => r.name);
 
-  // --- CAR (Cordillera Administrative Region) ---
-  {
-    name: 'Baguio City',
-    type: 'City',
-    region: 'CAR (Cordillera Administrative Region)',
-    barangays: [
-      'Asin Road', 'Bakakeng Central', 'Camp 7', 'Camp 8', 'Engineers Hill',
-      'Gibraltar', 'Irisan', 'Loakan Proper', 'Mines View Park', 'Pacdal', 'Trancoville'
-    ]
-  },
-  {
-    name: 'Tabuk City',
-    type: 'City',
-    region: 'CAR (Cordillera Administrative Region)',
-    barangays: ['Bulanao', 'Dagupan Centro', 'Appas', 'Bado Dangwa', 'Laya East']
-  },
+// In-memory cache to guarantee zero-latency re-selection and offline resilience
+const psgcApiCache = {
+  cities: {},     // regionCode -> [{ code, name }]
+  barangays: {},  // cityCodeOrName -> [string]
+};
 
-  // --- Region I (Ilocos Region) ---
-  {
-    name: 'San Fernando City (La Union)',
-    type: 'City',
-    region: 'Region I (Ilocos Region)',
-    barangays: ['Catbangen', 'Ilocanos Norte', 'Ilocanos Sur', 'Lingsat', 'Sevilla', 'Tanqui']
-  },
-  {
-    name: 'Laoag City',
-    type: 'City',
-    region: 'Region I (Ilocos Region)',
-    barangays: ['Barangay 1 (San Lorenzo)', 'Barangay 23', 'Buttong', 'Nalbo', 'San Mateo']
-  },
-  {
-    name: 'Dagupan City',
-    type: 'City',
-    region: 'Region I (Ilocos Region)',
-    barangays: ['Bonuan Boquig', 'Bonuan Gueset', 'Lucao', 'Pantal', 'Poblacion Oeste']
-  },
-
-  // --- Region II (Cagayan Valley) ---
-  {
-    name: 'Tuguegarao City',
-    type: 'City',
-    region: 'Region II (Cagayan Valley)',
-    barangays: ['Balzain East', 'Buntun', 'Caritan Centro', 'Centro 1', 'Pengue-Ruyu']
-  },
-  {
-    name: 'Santiago City',
-    type: 'City',
-    region: 'Region II (Cagayan Valley)',
-    barangays: ['Centro East', 'Centro West', 'Dubinan East', 'Rizal', 'Victory Norte']
-  },
-
-  // --- Region III (Central Luzon) ---
-  {
-    name: 'San Fernando City (Pampanga)',
-    type: 'City',
-    region: 'Region III (Central Luzon)',
-    barangays: ['Dolores', 'San Agustin', 'San Jose', 'Santo Rosario', 'Telabastagan']
-  },
-  {
-    name: 'Angeles City',
-    type: 'City',
-    region: 'Region III (Central Luzon)',
-    barangays: ['Balibago', 'Cutcut', 'Malabanias', 'Pulung Maragul', 'Sto. Cristo']
-  },
-  {
-    name: 'San Jose del Monte City',
-    type: 'City',
-    region: 'Region III (Central Luzon)',
-    barangays: ['Graceville', 'Muzon', 'Sapang Palay', 'Tungkong Mangga']
-  },
-  {
-    name: 'Malolos City',
-    type: 'City',
-    region: 'Region III (Central Luzon)',
-    barangays: ['Catmon', 'Cofradia', 'Guinhawa', 'Mojon', 'Santo Rosario']
-  },
-  {
-    name: 'Olongapo City',
-    type: 'City',
-    region: 'Region III (Central Luzon)',
-    barangays: ['Barretto', 'East Bajac-Bajac', 'Gordon Heights', 'Kalaklan', 'New Cabalan']
-  },
-
-  // --- Region IV-A (CALABARZON) ---
-  {
-    name: 'Antipolo City',
-    type: 'City',
-    region: 'Region IV-A (CALABARZON)',
-    barangays: ['Beverly Hills', 'Cupang', 'Dalig', 'Mayamot', 'San Jose', 'San Roque']
-  },
-  {
-    name: 'Cainta',
-    type: 'City',
-    region: 'Region IV-A (CALABARZON)',
-    barangays: [
-      'San Andres', 'San Isidro', 'San Juan', 'San Roque',
-      'Santa Rosa', 'Santo Domingo', 'Santo Nino'
-    ]
-  },
-  {
-    name: 'Taytay',
-    type: 'City',
-    region: 'Region IV-A (CALABARZON)',
-    barangays: [
-      'Dolores (Poblacion)', 'Muzon', 'San Isidro', 'San Juan', 'Santa Ana'
-    ]
-  },
-  {
-    name: 'Rodriguez (Montalban)',
-    type: 'City',
-    region: 'Region IV-A (CALABARZON)',
-    barangays: [
-      'Balite', 'Burgos', 'Geronimo', 'Macabud', 'Manggahan',
-      'Mascap', 'Puray', 'Rosario', 'San Isidro', 'San Jose', 'San Rafael'
-    ]
-  },
-  {
-    name: 'San Mateo',
-    type: 'City',
-    region: 'Region IV-A (CALABARZON)',
-    barangays: [
-      'Ampid I', 'Ampid II', 'Banaba', 'Dulong Bayan 1', 'Dulong Bayan 2',
-      'Guinayang', 'Guitnang Bayan 1', 'Malanday', 'Maly', 'Santa Ana', 'Silangan'
-    ]
-  },
-  {
-    name: 'Calamba City',
-    type: 'City',
-    region: 'Region IV-A (CALABARZON)',
-    barangays: ['Canlubang', 'Halang', 'Makiling', 'Parian', 'Real']
-  },
-  {
-    name: 'Santa Rosa City',
-    type: 'City',
-    region: 'Region IV-A (CALABARZON)',
-    barangays: ['Balibago', 'Dila', 'Don Jose', 'Macabling', 'Tagapo']
-  },
-  {
-    name: 'Bacoor City',
-    type: 'City',
-    region: 'Region IV-A (CALABARZON)',
-    barangays: ['Habay', 'Molino I', 'Molino II', 'Molino III', 'Niog', 'Queens Row']
-  },
-  {
-    name: 'Dasmariñas City',
-    type: 'City',
-    region: 'Region IV-A (CALABARZON)',
-    barangays: ['Burol', 'Fatima', 'Langkaan', 'Paliparan', 'Salawag', 'Sampaloc']
-  },
-
-  // --- Region IV-B (MIMAROPA) ---
-  {
-    name: 'Puerto Princesa City',
-    type: 'City',
-    region: 'Region IV-B (MIMAROPA)',
-    barangays: ['Bancao-Bancao', 'San Jose', 'San Pedro', 'Santa Monica', 'Tiniguiban']
-  },
-  {
-    name: 'Calapan City',
-    type: 'City',
-    region: 'Region IV-B (MIMAROPA)',
-    barangays: ['Ilaya', 'Ibaba West', 'San Vicente Central', 'Tawiran']
-  },
-
-  // --- Region V (Bicol Region) ---
-  {
-    name: 'Legazpi City',
-    type: 'City',
-    region: 'Region V (Bicol Region)',
-    barangays: ['Bitano', 'Bogtong', 'Cabangan', 'Old Albay District', 'Rawis']
-  },
-  {
-    name: 'Naga City',
-    type: 'City',
-    region: 'Region V (Bicol Region)',
-    barangays: ['Concepcion Grande', 'Concepcion Pequeña', 'Magsaysay', 'Peñafrancia', 'Triangulo']
-  },
-
-  // --- Region VI (Western Visayas) ---
-  {
-    name: 'Iloilo City',
-    type: 'City',
-    region: 'Region VI (Western Visayas)',
-    barangays: ['City Proper', 'Jaro', 'La Paz', 'Mandurriao', 'Molo']
-  },
-  {
-    name: 'Bacolod City',
-    type: 'City',
-    region: 'Region VI (Western Visayas)',
-    barangays: ['Bata', 'Mandalagan', 'Mansilingan', 'Singcang', 'Villamonte']
-  },
-
-  // --- Region VII (Central Visayas) ---
-  {
-    name: 'Cebu City',
-    type: 'City',
-    region: 'Region VII (Central Visayas)',
-    barangays: [
-      'Apas', 'Banilad', 'Basak San Nicolas', 'Camputhaw', 'Capitol Site',
-      'Guadalupe', 'Kasambagan', 'Lahug', 'Mabolo', 'Pahina Central',
-      'Pardo', 'Punta Princesa', 'Sambag I', 'Sambag II', 'Talamban'
-    ]
-  },
-  {
-    name: 'Mandaue City',
-    type: 'City',
-    region: 'Region VII (Central Visayas)',
-    barangays: ['Bakilid', 'Banilad', 'Centro', 'Subangdaku', 'Tipolo']
-  },
-  {
-    name: 'Lapu-Lapu City',
-    type: 'City',
-    region: 'Region VII (Central Visayas)',
-    barangays: ['Basak', 'Gun-ob', 'Maribago', 'Punta Engaño', 'Pajo']
-  },
-
-  // --- Region VIII (Eastern Visayas) ---
-  {
-    name: 'Tacloban City',
-    type: 'City',
-    region: 'Region VIII (Eastern Visayas)',
-    barangays: ['Abucay', 'Downtown', 'Marasbaras', 'San Jose', 'Utap']
-  },
-
-  // --- Region IX (Zamboanga Peninsula) ---
-  {
-    name: 'Zamboanga City',
-    type: 'City',
-    region: 'Region IX (Zamboanga Peninsula)',
-    barangays: ['Canelar', 'Pasonanca', 'Santa Maria', 'Tetuan', 'Tumaga']
-  },
-
-  // --- Region X (Northern Mindanao) ---
-  {
-    name: 'Cagayan de Oro City',
-    type: 'City',
-    region: 'Region X (Northern Mindanao)',
-    barangays: ['Bulua', 'Carmen', 'Kauswagan', 'Lapasan', 'Macasandig', 'Nazareth']
-  },
-  {
-    name: 'Iligan City',
-    type: 'City',
-    region: 'Region X (Northern Mindanao)',
-    barangays: ['Pala-o', 'Poblacion', 'San Miguel', 'Suarez', 'Tubod']
-  },
-
-  // --- Region XI (Davao Region) ---
-  {
-    name: 'Davao City',
-    type: 'City',
-    region: 'Region XI (Davao Region)',
-    barangays: [
-      'Agdao', 'Bansalan', 'Buhangin', 'Bunawan', 'Calinan',
-      'Matina Crossing', 'Matina Pangi', 'Poblacion', 'Talomo', 'Toril'
-    ]
-  },
-  {
-    name: 'Tagum City',
-    type: 'City',
-    region: 'Region XI (Davao Region)',
-    barangays: ['Apokon', 'Magugpo Poblacion', 'Mankilam', 'San Miguel', 'Visayan Village']
-  },
-
-  // --- Region XII (SOCCSKSARGEN) ---
-  {
-    name: 'General Santos City',
-    type: 'City',
-    region: 'Region XII (SOCCSKSARGEN)',
-    barangays: ['Apopong', 'Calumpang', 'Dadiangas East', 'Labangal', 'Lagao', 'San Isidro']
-  },
-
-  // --- Region XIII (Caraga) ---
-  {
-    name: 'Butuan City',
-    type: 'City',
-    region: 'Region XIII (Caraga)',
-    barangays: ['Ambago', 'Doongan', 'Holy Redeemer', 'Libertad', 'Villa Kananga']
-  },
-
-  // --- BARMM (Bangsamoro Autonomous Region) ---
-  {
-    name: 'Cotabato City',
-    type: 'City',
-    region: 'BARMM (Bangsamoro Autonomous Region)',
-    barangays: ['Bagua', 'Kalanganan', 'Poblacion 1', 'Rosary Heights', 'Tamontaka']
+// Fetch all cities and municipalities for a chosen region code via PSGC API
+export async function fetchPsgcCities(regionCode) {
+  if (!regionCode) return [];
+  if (psgcApiCache.cities[regionCode]) {
+    return psgcApiCache.cities[regionCode];
   }
-];
+
+  try {
+    const res = await fetch(`https://psgc.gitlab.io/api/regions/${regionCode}/cities-municipalities/`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const sorted = data
+          .map(c => ({
+            code: c.code,
+            name: c.name,
+            isCity: c.isCity,
+            isMunicipality: c.isMunicipality,
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        psgcApiCache.cities[regionCode] = sorted;
+        return sorted;
+      }
+    }
+  } catch (err) {
+    console.warn('PSGC cities API lookup failed, trying fallback...', err);
+  }
+
+  // Graceful offline fallback for NCR if network is disconnected
+  if (regionCode === '130000000') {
+    return [
+      { code: '137501000', name: 'City of Caloocan' },
+      { code: '137404000', name: 'Quezon City' },
+      { code: '133900000', name: 'City of Manila' },
+      { code: '137502000', name: 'City of Malabon' },
+      { code: '137503000', name: 'City of Navotas' },
+      { code: '137504000', name: 'City of Valenzuela' },
+      { code: '137602000', name: 'City of Makati' },
+      { code: '137403000', name: 'City of Pasig' },
+      { code: '137607000', name: 'City of Taguig' },
+    ];
+  }
+
+  return [];
+}
+
+// Fetch all barangays for a chosen city/municipality via PSGC API
+// Ensures 100% Caloocan City accuracy with RA 11993 (176-A to 176-F and UCC campus)
+export async function fetchPsgcBarangays(cityCode, cityName = '') {
+  if (!cityCode && !cityName) return [];
+  const cacheKey = cityCode || cityName;
+  if (psgcApiCache.barangays[cacheKey]) {
+    return psgcApiCache.barangays[cacheKey];
+  }
+
+  // 1. CALOOCAN CITY SPECIAL ACCURACY (RA 11993 & UCC Campus)
+  const isCaloocan =
+    cityCode === '137501000' ||
+    (cityName && cityName.toLowerCase().includes('caloocan'));
+
+  if (isCaloocan) {
+    psgcApiCache.barangays[cacheKey] = CALOOCAN_ALL_BARANGAYS;
+    return CALOOCAN_ALL_BARANGAYS;
+  }
+
+  // 2. ALL OTHER PHILIPPINE CITIES & MUNICIPALITIES (LIVE PSGC API)
+  try {
+    const res = await fetch(`https://psgc.gitlab.io/api/cities-municipalities/${cityCode}/barangays/`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const sorted = data
+          .map(b => b.name)
+          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+        psgcApiCache.barangays[cacheKey] = sorted;
+        return sorted;
+      }
+    }
+  } catch (err) {
+    console.warn('PSGC barangays API lookup failed:', err);
+  }
+
+  return [];
+}
 
 export default function MidtermRegistrationForm() {
   const [formData, setFormData] = useState({
@@ -843,6 +473,12 @@ export default function MidtermRegistrationForm() {
     domain: '',
     message: '',
   });
+
+  // Dynamic Geographic API State (PSGC API across all Philippine Regions, Cities & Barangays)
+  const [availableCities, setAvailableCities] = useState([]);
+  const [loadingCities, setLoadingCities] = useState(false);
+  const [availableBarangays, setAvailableBarangays] = useState([]);
+  const [loadingBarangays, setLoadingBarangays] = useState(false);
 
   // Debounced live email domain verification via public DNS API (no hardcoded list)
   useEffect(() => {
@@ -952,20 +588,7 @@ export default function MidtermRegistrationForm() {
     return age >= 0 ? age : 0;
   }, [formData.birthMonth, formData.birthDay, formData.birthYear]);
 
-  // Available Cities filtered by selected Region
-  const availableCities = useMemo(() => {
-    if (!formData.region) return [];
-    return PH_LOCATIONS.filter(loc => loc.region === formData.region);
-  }, [formData.region]);
 
-  // Selected City & Barangays list
-  const selectedLocation = useMemo(() => {
-    return PH_LOCATIONS.find(loc => loc.name === formData.city && (!formData.region || loc.region === formData.region)) || null;
-  }, [formData.city, formData.region]);
-
-  const barangayList = useMemo(() => {
-    return selectedLocation ? selectedLocation.barangays : [];
-  }, [selectedLocation]);
 
   // Full Assembled Address with Region
   const fullAddress = useMemo(() => {
@@ -1250,9 +873,18 @@ export default function MidtermRegistrationForm() {
     }
     if (field === 'confirmPassword') err = validateConfirmPassword(value, formData.password);
     if (field === 'blockNo') err = !value.trim() ? 'No. of Block / Street is required.' : '';
-    if (field === 'region') err = !value ? 'Please select a Region.' : '';
-    if (field === 'city') err = !value ? 'Please select a City.' : '';
-    if (field === 'barangay') err = !value ? 'Please select a Barangay.' : '';
+    if (field === 'region') {
+      handleRegionChange({ target: { value } });
+      return;
+    }
+    if (field === 'city') {
+      handleCityChange({ target: { value } });
+      return;
+    }
+    if (field === 'barangay') {
+      handleBarangayChange({ target: { value } });
+      return;
+    }
 
     setErrors(prev => ({ ...prev, [field]: err }));
   };
@@ -1279,36 +911,75 @@ export default function MidtermRegistrationForm() {
     setErrors(prev => ({ ...prev, [field]: err }));
   };
 
-  const handleRegionChange = (e) => {
-    const chosenRegion = e.target.value;
+  // Dynamic Geographic Selection Handlers
+  const handleRegionChange = async (e) => {
+    const chosenRegionName = e.target.value;
+    const regionObj = PSGC_REGIONS.find(r => r.name === chosenRegionName);
+
     setFormData(prev => ({
       ...prev,
-      region: chosenRegion,
+      region: chosenRegionName,
       city: '',
       barangay: '',
     }));
     setTouched(prev => ({ ...prev, region: true }));
     setErrors(prev => ({
       ...prev,
-      region: chosenRegion ? '' : 'Please select a Region.',
+      region: chosenRegionName ? '' : 'Please select a Region.',
       city: '',
       barangay: '',
     }));
+
+    setAvailableBarangays([]);
+    if (!regionObj) {
+      setAvailableCities([]);
+      return;
+    }
+
+    setLoadingCities(true);
+    try {
+      const cities = await fetchPsgcCities(regionObj.code);
+      setAvailableCities(cities);
+    } catch (err) {
+      console.error('Failed to fetch cities from PSGC API:', err);
+      setAvailableCities([]);
+    } finally {
+      setLoadingCities(false);
+    }
   };
 
-  const handleCityChange = (e) => {
-    const chosenCity = e.target.value;
+  const handleCityChange = async (e) => {
+    const chosenCityName = e.target.value;
+    const cityObj = availableCities.find(c => c.name === chosenCityName);
+
     setFormData(prev => ({
       ...prev,
-      city: chosenCity,
+      city: chosenCityName,
       barangay: '',
     }));
     setTouched(prev => ({ ...prev, city: true }));
     setErrors(prev => ({
       ...prev,
-      city: chosenCity ? '' : 'Please select a City.',
+      city: chosenCityName ? '' : 'Please select a City.',
       barangay: '',
     }));
+
+    if (!chosenCityName) {
+      setAvailableBarangays([]);
+      return;
+    }
+
+    setLoadingBarangays(true);
+    try {
+      const cityCode = cityObj ? cityObj.code : '';
+      const brgys = await fetchPsgcBarangays(cityCode, chosenCityName);
+      setAvailableBarangays(brgys);
+    } catch (err) {
+      console.error('Failed to fetch barangays from PSGC API:', err);
+      setAvailableBarangays([]);
+    } finally {
+      setLoadingBarangays(false);
+    }
   };
 
   const handleBarangayChange = (e) => {
@@ -1342,6 +1013,10 @@ export default function MidtermRegistrationForm() {
     });
     setErrors({});
     setTouched({});
+    setAvailableCities([]);
+    setAvailableBarangays([]);
+    setLoadingCities(false);
+    setLoadingBarangays(false);
     setEmailStatus({
       checking: false,
       verified: false,
@@ -1711,45 +1386,51 @@ export default function MidtermRegistrationForm() {
                   onChange={handleRegionChange}
                   onBlur={() => handleBlur('region')}
                 >
-                  <option value="">-- Select Region --</option>
-                  {PH_REGIONS.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
+                  <option value="">-- Select Region ({PSGC_REGIONS.length}) --</option>
+                  {PSGC_REGIONS.map((r) => (
+                    <option key={r.code} value={r.name}>
+                      {r.name}
                     </option>
                   ))}
                 </select>
-                <span className="field-hint">Select region to filter cities</span>
+                <span className="field-hint">Live PSGC API: All 17 Philippine Regions</span>
                 {errors.region && touched.region && (
                   <p className="error-msg">{errors.region}</p>
                 )}
               </div>
 
-              {/* City Dropdown */}
+              {/* City / Municipality Dropdown */}
               <div className={`form-group ${errors.city && touched.city ? 'has-error' : ''}`}>
                 <label htmlFor="citySelect">
-                  City (Dropdown) <span className="req">*</span>
+                  City / Municipality (Dropdown) <span className="req">*</span>
                 </label>
                 <select
                   id="citySelect"
                   className="form-select"
                   value={formData.city}
-                  disabled={!formData.region}
+                  disabled={!formData.region || loadingCities}
                   onChange={handleCityChange}
                   onBlur={() => handleBlur('city')}
                 >
                   <option value="">
                     {!formData.region
                       ? '-- Select Region first --'
-                      : `-- Select City (${availableCities.length}) --`}
+                      : loadingCities
+                      ? 'Loading cities & municipalities from PSGC API...'
+                      : `-- Select City / Municipality (${availableCities.length}) --`}
                   </option>
-                  {availableCities.map((loc) => (
-                    <option key={loc.name} value={loc.name}>
-                      {loc.name}
+                  {availableCities.map((c) => (
+                    <option key={c.code || c.name} value={c.name}>
+                      {c.name}
                     </option>
                   ))}
                 </select>
                 <span className="field-hint">
-                  {formData.region ? `${availableCities.length} cities available` : 'Requires region selection'}
+                  {!formData.region
+                    ? 'Requires region selection'
+                    : loadingCities
+                    ? 'Fetching official cities & municipalities via PSGC API...'
+                    : `Live PSGC API: ${availableCities.length} cities & municipalities loaded`}
                 </span>
                 {errors.city && touched.city && (
                   <p className="error-msg">{errors.city}</p>
@@ -1765,23 +1446,29 @@ export default function MidtermRegistrationForm() {
                   id="barangaySelect"
                   className="form-select"
                   value={formData.barangay}
-                  disabled={!formData.city}
+                  disabled={!formData.city || loadingBarangays}
                   onChange={handleBarangayChange}
                   onBlur={() => handleBlur('barangay')}
                 >
                   <option value="">
                     {!formData.city
                       ? '-- Select City first --'
-                      : `-- Select Barangay in ${formData.city} --`}
+                      : loadingBarangays
+                      ? 'Loading barangays from PSGC API...'
+                      : `-- Select Barangay in ${formData.city} (${availableBarangays.length}) --`}
                   </option>
-                  {barangayList.map((b) => (
+                  {availableBarangays.map((b) => (
                     <option key={b} value={b}>
                       {b.startsWith('Barangay') || b.startsWith('Brgy') ? b : `Brgy. ${b}`}
                     </option>
                   ))}
                 </select>
                 <span className="field-hint">
-                  {barangayList.length > 0 ? `${barangayList.length} barangays loaded` : 'System-generated from selected city'}
+                  {!formData.city
+                    ? 'System-generated from selected city'
+                    : loadingBarangays
+                    ? 'Fetching official barangays via PSGC API...'
+                    : `Live PSGC API: ${availableBarangays.length} barangays loaded`}
                 </span>
                 {errors.barangay && touched.barangay && (
                   <p className="error-msg">{errors.barangay}</p>
@@ -1871,7 +1558,7 @@ export default function MidtermRegistrationForm() {
                 <span className="preview-val">{formData.region || '—'}</span>
               </div>
               <div className="preview-row">
-                <span className="preview-key">City:</span>
+                <span className="preview-key">City / Municipality:</span>
                 <span className="preview-val">{formData.city || '—'}</span>
               </div>
               <div className="preview-row">
