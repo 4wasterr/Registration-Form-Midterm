@@ -1084,36 +1084,6 @@ export default function MidtermRegistrationForm() {
     }));
   };
 
-  const handleReset = () => {
-    setFormData({
-      firstName: '',
-      middleName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      birthMonth: '',
-      birthDay: '',
-      birthYear: '',
-      blockNo: '',
-      region: '',
-      city: '',
-      barangay: '',
-    });
-    setErrors({});
-    setTouched({});
-    setAvailableCities([]);
-    setAvailableBarangays([]);
-    setLoadingCities(false);
-    setLoadingBarangays(false);
-    setEmailStatus({
-      checking: false,
-      verified: false,
-      domain: '',
-      message: '',
-    });
-  };
-
   return (
     <div className="midterm-page">
       <div className="midterm-card">
@@ -1573,13 +1543,6 @@ export default function MidtermRegistrationForm() {
                 )}
               </div>
             </div>
-          </div>
-
-          {/* Form Actions (Submit button removed - Live Validation Active) */}
-          <div className="form-actions">
-            <button type="button" onClick={handleReset} className="btn btn-secondary">
-              Reset Form
-            </button>
           </div>
         </form>
 
